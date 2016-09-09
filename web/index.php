@@ -2,4 +2,6 @@
 
 header('Content-Type: text/html');
 
-echo "hello";
+$name = $_GET['name'] ?? 'nobody';
+
+echo sprintf("hello, %s", $name);
