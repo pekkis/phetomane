@@ -7,12 +7,33 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $request = Request::createFromGlobals();
 
-$response = new Response();
-$response->headers->set('Content-Type', 'text/html');
+$path = $request->getPathInfo();
 
-$who = $request->query->get('hello', 'nobody');
+$map = [
+    '/' => '/hello',
+    '/hello' => function(Request $request) {
+        $response = new Response();
+        $who = $request->query->get('hello', 'nobody');
+        $response->setContent(sprintf('hello, %s', $who));
+        return $response;
+    },
+    '/goodbye' => function() {
+        return Response::create('goodbye :(');
+    }
+];
+
+if (isset($map[$path])) {
+
+    // Index page kludge!
+    if (is_string($map[$path])) {
+        $path = $map[$path];
+    }
+
+    $response = $map[$path]($request);
+} else {
+    $response = Response::create('not found')->setStatusCode(404);
+}
 
 $response
-    ->setContent(sprintf('hello, %s', $who))
     ->prepare($request)
     ->send();
