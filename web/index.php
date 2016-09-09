@@ -12,6 +12,18 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $request = Request::createFromGlobals();
 
+
+function hello(Request $request) {
+    $response = new Response();
+    $who = $request->attributes->get('who');
+    $response->setContent(sprintf('hello, %s', $who));
+    return $response;
+}
+
+function goodbye() {
+    return Response::create('goodbye :(');
+}
+
 $routes = new RouteCollection();
 $routes->add(
     'index',
@@ -42,19 +54,7 @@ $matcher = new UrlMatcher($routes, $context);
 try {
     $match = $matcher->match($request->getPathInfo());
     $request->attributes->add($match);
-
-    $controllers = [
-        'hello' => function(Request $request) {
-            $response = new Response();
-            $who = $request->attributes->get('who');
-            $response->setContent(sprintf('hello, %s', $who));
-            return $response;
-        },
-        'goodbye' => function() {
-            return Response::create('goodbye :(');
-        }
-    ];
-    $response = $controllers[$match['_controller']]($request);
+    $response = $match['_controller']($request);
 } catch (ResourceNotFoundException $e) {
     $response = Response::create('not found')->setStatusCode(404);
 }
