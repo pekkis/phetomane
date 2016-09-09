@@ -14,18 +14,40 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\EventListener\RouterListener;
 use Symfony\Component\Debug\Exception\FlattenException;
 use Symfony\Component\HttpKernel\EventListener\ExceptionListener;
+use Pimple\Container;
+use Pekkis\Phetomane\PimpleListener;
+use Pekkis\Phetomane\StringResponseListener;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-function hello(string $who) {
-    $response = new Response();
-    $response->setContent(sprintf('hello, %s', $who));
-    return $response;
+function template(string $template) {
+    return function (Container $container) use ($template) {
+        /** @var Twig_Environment $twig */
+        $twig = $container['twig'];
+        return $twig->render($template);
+    };
+}
+
+function hello(string $who, Container $container) {
+    /** @var Twig_Environment $twig */
+    $twig = $container['twig'];
+    return $twig->render('hello.twig', ['who' => $who]);
 }
 
 function goodbye() {
-    return Response::create('goodbye :(');
 }
+
+$container = new Container();
+
+$container['twig'] = function() {
+    $twig = new Twig_Environment(
+        new Twig_Loader_Filesystem(__DIR__ . '/../views'),
+        [
+            'cache' => false //__DIR__ . '/../tmp',
+        ]
+    );
+    return $twig;
+};
 
 $request = Request::createFromGlobals();
 
@@ -52,7 +74,7 @@ $routes->add(
 $routes->add(
     'goodbye',
     new Route('goodbye', [
-        '_controller' => '\goodbye'
+        '_controller' => template('goodbye.twig')
     ])
 );
 
@@ -69,6 +91,9 @@ $errorHandler = function (FlattenException $exception) {
     return new Response($msg, $exception->getStatusCode());
 };
 $dispatcher->addSubscriber(new ExceptionListener($errorHandler));
+
+$dispatcher->addSubscriber(new PimpleListener($container));
+$dispatcher->addSubscriber(new StringResponseListener());
 
 $phetomane = new Application(
     $dispatcher,
