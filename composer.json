@@ -9,7 +9,9 @@
             "email": "puhemies@diktaattoriporssi.com"
         }
     ],
-    "require": {},
+    "require": {
+        "symfony/http-foundation": "^3.1"
+    },
 
     "autoload": {
         "psr-4": {
