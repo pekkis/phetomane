@@ -1,0 +1,19 @@
+{
+    "name": "pekkis/phetomane",
+    "description": "Training framework with symfony compos",
+    "type": "project",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Mikko Forsström",
+            "email": "puhemies@diktaattoriporssi.com"
+        }
+    ],
+    "require": {},
+
+    "autoload": {
+        "psr-4": {
+            "Pekkis\\Phetomane\\": "src/"
+        }
+    }
+}
